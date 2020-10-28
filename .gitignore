@@ -1,2 +1,7 @@
+#3D Render Sorting
+
 # modules
 node_modules/
+
+# c scripts
+c/
