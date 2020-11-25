@@ -1,1 +1,1 @@
-import './rendering.js'
+import './rendering/animations'

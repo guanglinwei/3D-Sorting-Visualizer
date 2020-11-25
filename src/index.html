@@ -16,13 +16,39 @@
         top: 0;
         padding: 8px;
         margin-left: 20px;
+        color: azure;
+      }
+
+      #bars-container {
+        position: absolute;
+        margin-left: auto;
+        margin-right: auto;
+        left: 0;
+        right: 0;
+        bottom: 10px;
+        height: 70%;
+        display: inline-block;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        border: 2px solid black;
+        overflow: hidden;
+      }
+
+      .bar {
+        width: 2px;
+        display: inline-block;
+        margin: 0 1px;
       }
   	</style>
   </head>
   <body>
     <div class="buttons-container">
-      <button id="testbutton">test</button>
+      <button id="test-button">test</button>
       <button id="randomize-button">Randomize Data</button>
+      Delay <input id="delay" type="text" value="16"></input>
+      Bars <input id="bar-count" type="text" value="12"></input>
     </div>
+
+    <div id="bars-container"></div>
   </body>
 </html>

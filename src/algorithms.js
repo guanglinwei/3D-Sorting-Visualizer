@@ -1,34 +1,17 @@
+import { ANIMATIONS, ANIMATION_TYPE } from './rendering/animations';
+
 export const Algorithms = {
 
   //represents the heights of all bars
   data: [],
   totalPiecesOfData: 12,
-  dataRange: { min: 1, max: 12 },
+  dataRange: { min: 1, max: 88 },
 
   fillWithRandomData: () => {
     Algorithms.data.splice(0, Algorithms.data.length);
     for(let i = 0; i < Algorithms.totalPiecesOfData; i++){
-      Algorithms.data.push(randNum(Algorithms.dataRange.min, Algorithms.dataRange.max));
+      Algorithms.data.push(randInt(Algorithms.dataRange.min, Algorithms.dataRange.max));
     }
-  },
-
-  //all of the sort algorithms sort the data first, then outputs a list of animations that determines colors / swaps, etc
-  animations: [],
-  ANIMATION_TYPE: {
-    //back to default color
-    resetColor: 0,
-
-    //change the color then change back after small delay
-    flashColor: 1,
-
-    //swap positions of two bars
-    swap: 2,
-
-    //set height/col of bar
-    set: 3,
-
-    //run through all elements when done
-    finished: 4
   },
 
 
@@ -38,8 +21,7 @@ TLDR: keeps swapping adjacent elements until the set is sorted.
 */
 
   bubbleSort: function() {
-    this.animations = [];
-    let animations = this.animations;
+    ANIMATIONS.splice(0, ANIMATIONS.length);
     let data = this.data;
 
     while(true) {
@@ -49,10 +31,10 @@ TLDR: keeps swapping adjacent elements until the set is sorted.
       // for each pair of elements in the set
       for(let i = 0; i < data.length - 1; i++) {
         // make the selected ones red to highlight them
-        animations.push({
-          animType: this.ANIMATION_TYPE.flashColor,
+        ANIMATIONS.push({
+          animType: ANIMATION_TYPE.flashColor,
           inds: [i, i + 1],
-          col: 0
+          col: 1
         });
 
         // if an element is greater than the one after, swap them
@@ -63,8 +45,8 @@ TLDR: keeps swapping adjacent elements until the set is sorted.
           done = false;
 
           // color them
-          animations.push({
-            animType: this.ANIMATION_TYPE.swap,
+          ANIMATIONS.push({
+            animType: ANIMATION_TYPE.swap,
             inds: [i, i + 1]
           });
         }
@@ -74,8 +56,8 @@ TLDR: keeps swapping adjacent elements until the set is sorted.
       if(done) break;
     }
 
-    animations.push({
-      animType: this.ANIMATION_TYPE.finished
+    ANIMATIONS.push({
+      animType: ANIMATION_TYPE.finished
     });
   },
 
@@ -89,12 +71,12 @@ TLDR: keep dividing the array in half, then merge them in order
 
   // just call this function so we dont have to worry about parameters
   mergeSort: function() {
-    this.animations = [];
+    ANIMATIONS.splice(0, ANIMATIONS.length);
     const aux = this.data.slice();
     this.mergeSortArr(this.data, aux, 0, this.data.length - 1);
 
-    this.animations.push({
-      animType: this.ANIMATION_TYPE.finished
+    ANIMATIONS.push({
+      animType: ANIMATION_TYPE.finished
     });
   },
 
@@ -125,14 +107,6 @@ TLDR: keep dividing the array in half, then merge them in order
  // merge arr[l..m] and arr[m+1..r]
   merge: function(arr, aux, l, m, r) {
 
-    // we need to copy the two subarrays into temporary arrays
-    // let aL = [];
-    // let aR = [];
-    // for(let i = 0; i < len1; i++)
-    //   aL[i] = arr[l + i];
-    // for(let i = 0; i < len2; i++)
-    //   aR[i] = arr[m + 1 + i];
-
     let i = l;
     let j = m + 1;
     let k = l;
@@ -140,16 +114,16 @@ TLDR: keep dividing the array in half, then merge them in order
     // compare and add the elements to the aux array in order
     while(i <= m && j <= r) {
       
-      this.animations.push({
-        animType: this.ANIMATION_TYPE.flashColor,
+      ANIMATIONS.push({
+        animType: ANIMATION_TYPE.flashColor,
         inds: [i, j],
-        col: 0
+        col: 1
       });
       
       // if arr[i] should come before arr[j]
       if(arr[i] <= arr[j]) {
-        this.animations.push({
-          animType: this.ANIMATION_TYPE.set,
+        ANIMATIONS.push({
+          animType: ANIMATION_TYPE.set,
           ind: k,
           val: arr[i]
         });
@@ -159,8 +133,8 @@ TLDR: keep dividing the array in half, then merge them in order
         aux[k++] = arr[i++];
       }
       else {
-        this.animations.push({
-          animType: this.ANIMATION_TYPE.set,
+        ANIMATIONS.push({
+          animType: ANIMATION_TYPE.set,
           ind: k,
           val: arr[j]
         });
@@ -172,19 +146,19 @@ TLDR: keep dividing the array in half, then merge them in order
 
     // if there are any elements left in either subarray, then add them to aux as well
     while(i <= m) {
-      this.animations.push({
-        animType: this.ANIMATION_TYPE.flashColor,
-        inds: [i],
-        col: 0
+      ANIMATIONS.push({
+        animType: ANIMATION_TYPE.set,
+        ind: k,
+        val: arr[i]
       });
       
       aux[k++] = arr[i++];
     }
     while(j <= r) {
-      this.animations.push({
-        animType: this.ANIMATION_TYPE.flashColor,
-        inds: [j],
-        col: 0
+      ANIMATIONS.push({
+        animType: ANIMATION_TYPE.set,
+        ind: k,
+        val: arr[j]
       });
 
       aux[k++] = arr[j++];
@@ -198,10 +172,10 @@ TLDR: keep dividing the array in half, then merge them in order
   TLDR: recursively pick and element as a pivot and place elements less than the pivot below and elements larger above
   */
   quickSort: function() {
-    this.animations = [];
+    ANIMATIONS.splice(0, ANIMATIONS.length);
     this.quickSortArr(this.data, 0, this.data.length - 1);
-    this.animations.push({
-      animType: this.ANIMATION_TYPE.finished
+    ANIMATIONS.push({
+      animType: ANIMATION_TYPE.finished
     });
   },
 
@@ -223,20 +197,20 @@ TLDR: keep dividing the array in half, then merge them in order
     let pivot = arr[r];
 
     // highlight the pivot
-    this.animations.push({
-      animType: this.ANIMATION_TYPE.set,
+    ANIMATIONS.push({
+      animType: ANIMATION_TYPE.set,
       ind: r,
-      col: 4
+      col: 2
     });
 
     // i = index of the element smaller than current one (j)
     let i = l - 1;
     for(let j = l; j < r; j++) {
       // highlight bar i and j
-      this.animations.push({
-        animType: this.ANIMATION_TYPE.flashColor,
+      ANIMATIONS.push({
+        animType: ANIMATION_TYPE.flashColor,
         inds: [i, j],
-        col: 0
+        col: 1
       });
 
       // if the current element is less than the pivot
@@ -249,8 +223,8 @@ TLDR: keep dividing the array in half, then merge them in order
         arr[i] = arr[j];
         arr[j] = temp;
 
-        this.animations.push({
-          animType: this.ANIMATION_TYPE.swap,
+        ANIMATIONS.push({
+          animType: ANIMATION_TYPE.swap,
           inds: [i, j]
         });
       }
@@ -262,16 +236,16 @@ TLDR: keep dividing the array in half, then merge them in order
     arr[i] = arr[r];
     arr[r] = temp;
 
-    this.animations.push({
-      animType: this.ANIMATION_TYPE.swap,
+    ANIMATIONS.push({
+      animType: ANIMATION_TYPE.swap,
       inds: [i, r]
     });
 
     // unhighlight old pivot
-    this.animations.push({
-      animType: this.ANIMATION_TYPE.set,
+    ANIMATIONS.push({
+      animType: ANIMATION_TYPE.set,
       ind: r,
-      col: 1
+      col: 0
     });
     
     return i;

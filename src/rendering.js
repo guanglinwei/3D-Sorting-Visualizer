@@ -7,10 +7,13 @@ import { Algorithms } from './algorithms'
 
 const GAP_BETWEEN_BARS = 1;
 const BAR_WIDTH = 2;
-//ms between each update in sorting anim
+// ms between each update in sorting anim
 let DELAY_MS = 16;
 
-//user cannot start sort during another sort
+// don't update bars
+let haltAnimate = false;
+
+// user cannot start sort during another sort
 let isSorting = false;
 
 const container = document.body;
@@ -47,7 +50,7 @@ Algorithms.init();
 const data = Algorithms.data;
 
 // meshes of bars
-let bars = [];
+const bars = [];
 let gapAndWidth = GAP_BETWEEN_BARS + BAR_WIDTH;
 for(let i = 0; i < Algorithms.totalPiecesOfData; i++) {
   let b = new THREE.Mesh(boxGeometry, materials[1]);
@@ -94,7 +97,7 @@ document.getElementById('randomize-button').onclick = (e) => {
 };
 
 // test to see if algorithms are working
-document.getElementById('testbutton').onclick = (e) => {
+document.getElementById('test-button').onclick = (e) => {
   let fails = [];
   const types = ['bubble', 'merge', 'quick']
 
@@ -123,6 +126,104 @@ document.getElementById('testbutton').onclick = (e) => {
   }
 };
 
+// input (numbers)
+const posIntOverZero = /^[1-9]\d*$/;
+// previous values to restore to if input invalid
+let lastBarCount = 12;
+let lastDelay = 16;
+
+const barCountInput = document.getElementById('bar-count');
+const delayInput = document.getElementById('delay');
+
+const barCountHandler = (e) => {
+  const newValue = e.target.value;
+
+  // check to see if value (int > 0)
+  if(newValue.length === 0 || posIntOverZero.test(newValue)) {
+    // convert to int, clamp, and set
+    const newInt = Math.min(parseInt(newValue), 1000);
+    lastBarCount = newInt;
+    barCountInput.value = newInt;
+
+    return;
+  }
+
+  // revert the value to the last valid one
+  barCountInput.value = lastBarCount;
+}
+
+const barCountSubmitHandler = (e) => {
+  if(!!e.key && e.key !== 'Enter') return;
+  if(e.target.value.length === 0) return;
+
+  const newValue = parseInt(e.target.value);
+  if(newValue === bars.length) return;
+
+  haltAnimate = true;
+
+  Algorithms.totalPiecesOfData = newValue;
+  Algorithms.fillWithRandomData();
+  
+  // clear scene and bars array
+  for(let b of bars) {
+    scene.remove(b);
+    console.log('re');
+    b.geometry.dispose();
+    b.material.dispose();
+    b = undefined;
+  }
+  // scene = scene.remove(bars);
+  bars.splice(0, bars.length);
+  console.log(bars);
+  // reconstruct meshes
+  for(let i = 0; i < Algorithms.totalPiecesOfData; i++) {
+    let b = new THREE.Mesh(boxGeometry, materials[1]);
+    b.scale.y = data[i];
+    b.position.x = i * gapAndWidth;
+    bars.push(b);
+    scene.add(b);
+  }
+
+  haltAnimate = false;
+}
+
+barCountInput.addEventListener('input', barCountHandler);
+barCountInput.addEventListener('propertychange', barCountHandler);
+barCountInput.addEventListener('keyup', barCountSubmitHandler);
+barCountInput.addEventListener('blur', barCountSubmitHandler);
+
+
+const delayHandler = (e) => {
+  const newValue = e.target.value;
+
+  // check to see if valie (int > 0)
+  if(posIntOverZero.test(newValue)) {
+    // convert to int, clamp, and set
+    const newInt = Math.min(parseInt(newValue), 100);
+    lastDelay = newInt;
+    delayInput.value = newInt;
+
+    return;
+  }
+
+  // revert the value to the last valid one
+  delayInput.value = lastDelay;
+}
+
+const delaySubmitHandler = (e) => {
+  if(e.key !== 'Enter') return;
+
+  const newValue = parseInt(e.target.value); 
+  DELAY_MS = newValue;
+}
+
+delayInput.addEventListener('input', delayHandler);
+delayInput.addEventListener('propertychange', delayHandler);
+delayInput.addEventListener('keyup', delaySubmitHandler);
+delayInput.addEventListener('blur', delaySubmitHandler);
+
+
+
 // only randomize the data set is it is already sorted and the user hasn't manually randomized it
 let hasDataBeenRandomized = true;
 
@@ -143,23 +244,6 @@ function startSortOfType(sort){
   // the name of the sort (ex: merge -> mergeSort)
   // const algo = Algorithms[sort + "Sort"];
   Algorithms[sort + "Sort"]();
-  // console.log(algo);
-
-  // switch(sort){
-  //   case 'bubble':
-  //     Algorithms.bubbleSort();
-  //     break;
-
-  //   case 'merge':
-  //     Algorithms.mergeSort();
-  //     break;
-
-  //   default:
-  //     return;
-      
-  // }
-
-  // algo();
 
   // animate
   animStarted = true;
@@ -221,7 +305,7 @@ async function doAnimationsAsync(anims) {
 
   // the animations need to be visible, so if the delay is too lower than 1/60, than set it to 1/60
   // we want the color flashing to be visible for at least one frame
-  const ANIM_DELAY = Math.max(DELAY_MS, .0167);
+  const ANIM_DELAY = Math.max(DELAY_MS, 17);
 
   for(let i = 0; i < anims.length; i++) {
     let anim = anims[i];
@@ -318,8 +402,9 @@ function animate() {
     
   }
   else{
+    if(haltAnimate) return;
     for(let i = 0; i < Algorithms.totalPiecesOfData; i++) {
-      if(bars[i].scale.y !== data[i]) 
+      if(bars[i] !== undefined && bars[i].scale.y !== data[i]) 
         bars[i].scale.y = data[i];
     }
   }

@@ -4,7 +4,6 @@
   "description": "Visualizes several sorting algorithms in 3d",
   "private": true,
   "dependencies": {
-    "three": "^0.121.1"
   },
   "devDependencies": {
     "html-webpack-plugin": "^4.5.0",
